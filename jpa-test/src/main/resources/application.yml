@@ -1,0 +1,80 @@
+# ===========================================
+# JPA 테스트 애플리케이션 설정
+# ===========================================
+
+server:
+  port: 8082  # Producer 8080, Consumer 8081, JPA 8082
+
+spring:
+  application:
+    name: jpa-test
+
+  # ===========================================
+  # H2 Database 설정
+  # ===========================================
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    # mem:testdb = 인메모리 모드
+    # DB_CLOSE_DELAY=-1 = 연결 끊어도 DB 유지
+    # DB_CLOSE_ON_EXIT=FALSE = JVM 종료 전까지 유지
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # H2 콘솔 활성화 (http://localhost:8082/h2-console)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # ===========================================
+  # JPA / Hibernate 설정
+  # ===========================================
+  jpa:
+    # -----------------------------
+    # DDL 자동 생성
+    # -----------------------------
+    hibernate:
+      ddl-auto: create-drop
+      # create-drop: 앱 시작 시 테이블 생성, 종료 시 삭제 (테스트용)
+      # create: 앱 시작 시 테이블 생성 (기존 테이블 삭제)
+      # update: 변경된 부분만 반영 (개발용)
+      # validate: 스키마 검증만 (운영용)
+      # none: 아무것도 안 함
+
+    # -----------------------------
+    # SQL 출력 설정
+    # -----------------------------
+    show-sql: true  # 콘솔에 SQL 출력
+    properties:
+      hibernate:
+        format_sql: true  # SQL 포맷팅 (가독성)
+
+        # -----------------------------
+        # Batch Size 설정 (N+1 해결책 중 하나)
+        # -----------------------------
+        default_batch_fetch_size: 100
+        # 컬렉션이나 프록시 객체를 IN 절로 한번에 조회
+        # 예: SELECT * FROM order_item WHERE order_id IN (1, 2, 3, ... 100)
+
+        # -----------------------------
+        # JDBC Batch Insert/Update
+        # -----------------------------
+        jdbc:
+          batch_size: 50
+          # INSERT/UPDATE를 50개씩 모아서 한번에 실행
+          # 대량 데이터 저장 시 성능 향상
+
+        order_inserts: true   # INSERT 순서 정렬 (배치 효율화)
+        order_updates: true   # UPDATE 순서 정렬 (배치 효율화)
+
+# ===========================================
+# 로깅 설정
+# ===========================================
+logging:
+  level:
+    root: INFO
+    com.practice.jpa: DEBUG
+    # SQL 파라미터 바인딩 값 출력
+    org.hibernate.orm.jdbc.bind: TRACE
+    # org.hibernate.SQL: DEBUG  # show-sql과 중복
