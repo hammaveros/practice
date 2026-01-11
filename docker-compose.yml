@@ -1,0 +1,121 @@
+# ===========================================
+# Kafka 3-Broker 클러스터 (Zookeeper 기반)
+# ===========================================
+# 실행: docker-compose up -d
+# 중지: docker-compose down
+# 로그: docker-compose logs -f kafka-1
+# ===========================================
+
+name: kafka
+
+services:
+  # ===========================================
+  # Zookeeper - Kafka 클러스터 코디네이터
+  # ===========================================
+  # 역할:
+  # - 브로커 메타데이터 관리
+  # - 리더 선출 조정
+  # - 토픽/파티션 정보 저장
+  # 참고: Kafka 3.x부터 KRaft 모드로 Zookeeper 없이 가능
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    ports:
+      - "2181:2181"  # 클라이언트 연결 포트
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000  # heartbeat 간격 (ms)
+    networks:
+      - kafka-network
+    healthcheck:
+      test: ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # Kafka Broker 1
+  # ===========================================
+  kafka-1:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"  # 외부 접근 포트 (localhost:9092)
+    environment:
+      # 브로커 식별자 (클러스터 내 유일해야 함)
+      KAFKA_BROKER_ID: 1
+
+      # Zookeeper 연결 주소
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      # 리스너 설정
+      # INTERNAL: 컨테이너 간 통신
+      # EXTERNAL: 호스트에서 접근
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-1:29092,EXTERNAL://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      # 복제 설정
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3  # __consumer_offsets 토픽 복제 수
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+
+      # 토픽 기본 설정
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3  # 새 토픽 기본 복제 수
+      KAFKA_NUM_PARTITIONS: 3  # 새 토픽 기본 파티션 수
+    networks:
+      - kafka-network
+
+  # ===========================================
+  # Kafka Broker 2
+  # ===========================================
+  kafka-2:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-2
+    depends_on:
+      - zookeeper
+    ports:
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-2:29093,EXTERNAL://localhost:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_NUM_PARTITIONS: 3
+    networks:
+      - kafka-network
+
+  # ===========================================
+  # Kafka Broker 3
+  # ===========================================
+  kafka-3:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-3
+    depends_on:
+      - zookeeper
+    ports:
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-3:29094,EXTERNAL://localhost:9094
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_NUM_PARTITIONS: 3
+    networks:
+      - kafka-network
+
+networks:
+  kafka-network:
+    driver: bridge

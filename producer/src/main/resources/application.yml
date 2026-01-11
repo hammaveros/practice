@@ -1,0 +1,56 @@
+# ===========================================
+# Producer 애플리케이션 설정
+# ===========================================
+
+server:
+  port: 8080  # Producer API 포트
+
+spring:
+  application:
+    name: kafka-producer  # 애플리케이션 이름 (로그에 표시)
+
+  kafka:
+    # ===========================================
+    # Kafka 브로커 연결 설정
+    # ===========================================
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+    # 3개 브로커 중 하나라도 살아있으면 연결됨
+    # 순서대로 시도하다가 연결되면 나머지 브로커 정보도 받아옴
+
+    producer:
+      # -----------------------------
+      # 키/값 직렬화 설정
+      # -----------------------------
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      # JsonSerializer: 객체를 JSON 문자열로 변환해서 전송
+
+      # -----------------------------
+      # 신뢰성 설정
+      # -----------------------------
+      acks: all
+      # all(-1): 모든 ISR(In-Sync Replica)이 메시지를 받아야 성공
+      # 1: 리더만 받으면 성공 (빠르지만 유실 가능)
+      # 0: 응답 안 기다림 (가장 빠르지만 유실 위험 큼)
+
+      retries: 3
+      # 전송 실패 시 재시도 횟수
+
+      properties:
+        # 같은 키를 가진 메시지는 항상 같은 파티션으로
+        # 순서 보장이 필요할 때 중요
+        enable.idempotence: true
+        # 중복 메시지 방지 (exactly-once 시맨틱)
+
+        max.in.flight.requests.per.connection: 5
+        # 응답 안 받고 보낼 수 있는 최대 요청 수
+        # idempotence=true면 5 이하여야 함
+
+# ===========================================
+# 로깅 설정
+# ===========================================
+logging:
+  level:
+    root: INFO
+    com.practice: DEBUG  # 우리 코드는 DEBUG 레벨
+    org.apache.kafka: WARN  # Kafka 내부 로그는 WARN만
