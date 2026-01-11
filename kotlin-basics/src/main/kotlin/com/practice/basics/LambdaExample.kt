@@ -173,4 +173,154 @@ fun main() {
         .uppercase()
         .also { println("   also: 대문자 = $it") }
     println("   also 최종: $processed")
+
+    // -----------------------------------------
+    // 8. Map 관련 함수들
+    // -----------------------------------------
+    println("\n8. Map 관련 함수:")
+
+    val map = mapOf("a" to 1, "b" to 2, "c" to 3)
+    println("   원본 Map: $map")
+
+    // keys, values, entries
+    println("   keys: ${map.keys}")           // Set<String>
+    println("   values: ${map.values}")       // Collection<Int>
+    println("   entries: ${map.entries}")     // Set<Entry<String, Int>>
+
+    // filterKeys: 키 조건으로 필터 -> Map 반환
+    val filteredByKey = map.filterKeys { it != "a" }
+    println("   filterKeys (a 제외): $filteredByKey")
+
+    // filterValues: 값 조건으로 필터 -> Map 반환
+    val filteredByValue = map.filterValues { it > 1 }
+    println("   filterValues (1보다 큰): $filteredByValue")
+
+    // mapKeys: 키 변환 -> Map 반환
+    val uppercaseKeys = map.mapKeys { (key, _) -> key.uppercase() }
+    println("   mapKeys (대문자): $uppercaseKeys")
+
+    // mapValues: 값 변환 -> Map 반환
+    val doubledValues = map.mapValues { (_, value) -> value * 2 }
+    println("   mapValues (2배): $doubledValues")
+
+    // getOrDefault: 없으면 기본값
+    val valueOrDefault = map.getOrDefault("z", 0)
+    println("   getOrDefault('z', 0): $valueOrDefault")
+
+    // getOrElse: 없으면 람다 실행
+    val valueOrElse = map.getOrElse("z") { -1 }
+    println("   getOrElse('z') { -1 }: $valueOrElse")
+
+    // -----------------------------------------
+    // 9. associate 계열 (List → Map 변환)
+    // -----------------------------------------
+    println("\n9. associate 계열 (List → Map):")
+
+    val fruits = listOf("apple", "banana", "cherry")
+    println("   원본 List: $fruits")
+
+    // associateWith: 원소가 키, 람다 결과가 값 -> Map<T, R>
+    val withLength = fruits.associateWith { it.length }
+    println("   associateWith { it.length }: $withLength")
+    // {apple=5, banana=6, cherry=6}
+
+    // associateBy: 람다 결과가 키, 원소가 값 -> Map<R, T>
+    val byFirstChar = fruits.associateBy { it.first() }
+    println("   associateBy { it.first() }: $byFirstChar")
+    // {a=apple, b=banana, c=cherry}
+
+    // associateBy 오버로드: 키와 값 둘 다 지정 -> Map<K, V>
+    val byFirstCharWithLength = fruits.associateBy(
+        keySelector = { it.first() },
+        valueTransform = { it.length }
+    )
+    println("   associateBy (키: 첫글자, 값: 길이): $byFirstCharWithLength")
+    // {a=5, b=6, c=6}
+
+    // associate: Pair로 직접 지정 -> Map<K, V>
+    val customMap = fruits.associate { it to it.uppercase() }
+    println("   associate { it to it.uppercase() }: $customMap")
+    // {apple=APPLE, banana=BANANA, cherry=CHERRY}
+
+    // -----------------------------------------
+    // 10. 기타 유용한 함수들
+    // -----------------------------------------
+    println("\n10. 기타 유용한 함수:")
+
+    // partition: 조건으로 2개 리스트 분리 -> Pair<List, List>
+    val (evensP, oddsP) = numbers.partition { it % 2 == 0 }
+    println("   partition (짝/홀): 짝수=$evensP, 홀수=$oddsP")
+
+    // chunked: n개씩 묶기 -> List<List>
+    val chunked = numbers.chunked(3)
+    println("   chunked(3): $chunked")
+
+    // windowed: 슬라이딩 윈도우 -> List<List>
+    val windowed = listOf(1, 2, 3, 4, 5).windowed(3)
+    println("   windowed(3): $windowed")  // [[1,2,3], [2,3,4], [3,4,5]]
+
+    // zip: 두 리스트 합치기 -> List<Pair>
+    val list1 = listOf("a", "b", "c")
+    val list2 = listOf(1, 2, 3)
+    val zipped = list1.zip(list2)
+    println("   zip: $zipped")  // [(a, 1), (b, 2), (c, 3)]
+
+    // zipWithNext: 인접 요소끼리 -> List<Pair>
+    val zipNext = listOf(1, 2, 3, 4).zipWithNext()
+    println("   zipWithNext: $zipNext")  // [(1,2), (2,3), (3,4)]
+
+    // flatten: 중첩 리스트 평탄화 -> List
+    val nested = listOf(listOf(1, 2), listOf(3, 4), listOf(5))
+    val flattened = nested.flatten()
+    println("   flatten: $flattened")  // [1, 2, 3, 4, 5]
+
+    // flatMap: map + flatten
+    val flatMapped = fruits.flatMap { it.toList() }
+    println("   flatMap (글자 분해): $flatMapped")
+
+    // distinct: 중복 제거 -> List
+    val withDupes = listOf(1, 2, 2, 3, 3, 3)
+    println("   distinct: ${withDupes.distinct()}")
+
+    // distinctBy: 특정 기준으로 중복 제거
+    val distinctByAge = people.distinctBy { it.age }
+    println("   distinctBy (나이): ${distinctByAge.map { it.name }}")
+
+    // take, drop
+    println("   take(3): ${numbers.take(3)}")      // 앞에서 3개
+    println("   drop(3): ${numbers.drop(3)}")      // 앞에서 3개 제외
+    println("   takeLast(3): ${numbers.takeLast(3)}")  // 뒤에서 3개
+
+    // takeWhile, dropWhile
+    println("   takeWhile { it < 5 }: ${numbers.takeWhile { it < 5 }}")
+    println("   dropWhile { it < 5 }: ${numbers.dropWhile { it < 5 }}")
+
+    // -----------------------------------------
+    // 11. 스코프 함수 반환값 정리
+    // -----------------------------------------
+    println("\n11. 스코프 함수 반환값 정리:")
+    println("""
+    | 함수  | 접근 방식 | 반환값        | 용도              |
+    |-------|----------|---------------|-------------------|
+    | let   | it       | 람다 결과     | null 체크, 변환    |
+    | run   | this     | 람다 결과     | 객체 설정 + 결과   |
+    | with  | this     | 람다 결과     | run과 동일 (비확장)|
+    | apply | this     | 자기 자신     | 객체 초기화/설정   |
+    | also  | it       | 자기 자신     | 부수효과 (로깅 등) |
+    """.trimIndent())
+
+    // 실제 예제로 비교
+    val testList = mutableListOf(1, 2, 3)
+
+    val letResult = testList.let { it.sum() }       // 6 (Int)
+    val runResult = testList.run { sum() }          // 6 (Int)
+    val withResult = with(testList) { sum() }       // 6 (Int)
+    val applyResult = testList.apply { add(4) }     // [1,2,3,4] (List)
+    val alsoResult = testList.also { println("   also 내부: $it") }  // [1,2,3,4] (List)
+
+    println("   let 결과: $letResult (타입: ${letResult::class.simpleName})")
+    println("   run 결과: $runResult (타입: ${runResult::class.simpleName})")
+    println("   with 결과: $withResult (타입: ${withResult::class.simpleName})")
+    println("   apply 결과: $applyResult (타입: ${applyResult::class.simpleName})")
+    println("   also 결과: $alsoResult (타입: ${alsoResult::class.simpleName})")
 }

@@ -133,15 +133,15 @@ fun main() {
     // -----------------------------------------
     println("\n7. 실전 예제:")
 
-    data class ApiResponse(
-        val data: UserData?,
-        val error: String?
-    )
-
     data class UserData(
         val id: Long,
         val name: String?,
         val email: String?
+    )
+
+    data class ApiResponse(
+        val data: UserData?,
+        val error: String?
     )
 
     // 성공 응답

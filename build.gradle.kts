@@ -15,6 +15,9 @@ plugins {
     // Kotlin Spring 플러그인 - @Component, @Service 등에 자동으로 open 붙여줌
     // (코틀린은 기본이 final이라 Spring AOP가 안 먹힘)
     kotlin("plugin.spring") version "1.9.25" apply false
+
+    // Kotlin JPA 플러그인 - @Entity 등에 no-arg 생성자 자동 생성
+    kotlin("plugin.jpa") version "1.9.25" apply false
 }
 
 // ===========================================
