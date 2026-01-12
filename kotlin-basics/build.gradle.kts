@@ -11,7 +11,7 @@ plugins {
 }
 
 application {
-    mainClass.set("com.practice.basics.LambdaExampleKt")
+    mainClass.set("com.practice.basics.CoroutineExampleKt")
 }
 
 dependencies {
