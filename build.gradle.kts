@@ -29,6 +29,8 @@ allprojects {
 
     repositories {
         mavenCentral()
+        // Confluent Schema Registry 관련 의존성
+        maven { url = uri("https://packages.confluent.io/maven/") }
     }
 }
 

@@ -1,7 +1,7 @@
 package com.practice.consumer.listener
 
 import com.practice.common.KafkaTopics
-import com.practice.common.event.OrderCreatedEvent
+import com.practice.common.event.OrderCreatedEventProto.OrderCreatedEvent
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
@@ -11,9 +11,11 @@ import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.stereotype.Component
 
 /**
- * 주문 이벤트 리스너
+ * 주문 이벤트 리스너 (Protobuf)
  *
- * Kafka에서 메시지를 받아서 처리하는 핵심 컴포넌트
+ * Kafka에서 Protobuf 메시지를 받아서 처리하는 핵심 컴포넌트
+ * - Schema Registry에서 스키마 조회 후 역직렬화
+ * - 수동 커밋으로 exactly-once 처리 보장
  */
 @Component
 class OrderEventListener {
@@ -39,14 +41,14 @@ class OrderEventListener {
         @Header(KafkaHeaders.OFFSET) offset: Long,
         acknowledgment: Acknowledgment  // 수동 커밋용
     ) {
-        log.info("========== 주문 이벤트 수신 ==========")
+        log.info("========== 주문 이벤트 수신 (Protobuf) ==========")
         log.info("파티션: {}, 오프셋: {}", partition, offset)
         log.info("주문 ID: {}", event.orderId)
         log.info("사용자: {}", event.userId)
         log.info("상품: {} x {}", event.productName, event.quantity)
         log.info("금액: {}원", event.totalPrice)
         log.info("생성 시각: {}", event.createdAt)
-        log.info("=====================================")
+        log.info("================================================")
 
         try {
             // ========================================

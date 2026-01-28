@@ -1,7 +1,7 @@
 package com.practice.producer.service
 
 import com.practice.common.KafkaTopics
-import com.practice.common.event.OrderCreatedEvent
+import com.practice.common.event.OrderCreatedEventProto.OrderCreatedEvent
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.SendResult
@@ -9,7 +9,11 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 /**
- * 주문 이벤트 발행 서비스
+ * 주문 이벤트 발행 서비스 (Protobuf)
+ *
+ * Protobuf 메시지를 Schema Registry를 통해 Kafka로 발행
+ * - 바이너리 직렬화로 JSON 대비 50-80% 크기 감소
+ * - Schema Registry에 스키마 자동 등록/검증
  */
 @Service
 class OrderProducerService(
@@ -20,7 +24,7 @@ class OrderProducerService(
     /**
      * 주문 생성 이벤트 발행 (비동기)
      *
-     * @param event 발행할 이벤트
+     * @param event 발행할 Protobuf 이벤트
      * @return CompletableFuture - 결과를 비동기로 받을 수 있음
      */
     fun sendOrderCreatedEvent(event: OrderCreatedEvent): CompletableFuture<SendResult<String, OrderCreatedEvent>> {
@@ -31,7 +35,7 @@ class OrderProducerService(
         return kafkaTemplate.send(
             KafkaTopics.ORDER_CREATED,  // 토픽명
             event.orderId,               // 키 (파티션 결정에 사용)
-            event                        // 값 (실제 메시지)
+            event                        // Protobuf 메시지
         ).whenComplete { result, ex ->
             if (ex == null) {
                 // 성공
